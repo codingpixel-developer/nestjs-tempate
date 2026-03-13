@@ -1,0 +1,122 @@
+# NestJS Auth Template
+
+NestJS 11 authentication template with PostgreSQL, TypeORM, JWT auth, admin management, and transactional email.
+
+## Tech Stack
+
+- **Runtime**: NestJS 11 (Express), TypeScript (ES2023, `nodenext` modules)
+- **Database**: PostgreSQL via TypeORM (auto-loaded entities, CLI migrations via `src/config/typeorm.config.ts`)
+- **Auth**: JWT access/refresh tokens, bcryptjs, global `AuthenticationGuard`, `@Auth()` decorator for opt-out
+- **Validation**: `class-validator` + `class-transformer` (global `ValidationPipe`), Joi for env validation
+- **Mail**: `@nestjs-modules/mailer` with EJS templates
+- **Docs**: Swagger at `/api`
+- **Path aliases**: `@/*` maps to `src/*`
+
+## Architecture
+
+```
+src/
+├── config/          # registerAs config factories + Joi env validation
+├── common/          # Shared decorators, interceptors, error handlers, pagination
+├── database/
+│   └── seeds/       # Standalone ts-node seeders (run outside NestJS bootstrap)
+├── auths/           # Auth module (login, refresh, password reset, guards)
+├── users/           # User module (signup, profile update)
+├── admin/           # Admin module (admin login, user management)
+├── mails/           # Mail module (SMTP + EJS templates)
+├── app.module.ts    # Root module: ConfigModule, TypeOrmModule, JWT, guards
+└── main.ts          # Bootstrap: CORS, ValidationPipe, Swagger
+```
+
+## Conventions
+
+### Module structure
+
+Each feature module follows this layout:
+
+```
+feature/
+├── feature.module.ts
+├── feature.controller.ts
+├── providers/
+│   ├── feature.service.ts        # Main service, delegates to action providers
+│   ├── action-name.provider.ts   # One provider per action (e.g. login.provider.ts)
+│   └── another-action.provider.ts
+├── dtos/
+├── entities/
+├── enums/
+├── guards/          # (if needed)
+├── decorators/      # (if needed)
+└── interfaces/      # (if needed)
+```
+
+### Config pattern
+
+All configs use `registerAs` from `@nestjs/config` and export a typed interface:
+
+```typescript
+import { registerAs } from '@nestjs/config';
+
+export interface FooConfig {
+  bar: string;
+}
+
+export default registerAs('foo', (): FooConfig => ({
+  bar: process.env.FOO_BAR || 'default',
+}));
+```
+
+Configs are loaded in `app.module.ts` via `ConfigModule.forRoot({ load: [...] })`. Env vars are validated in `src/config/env.validation.ts` using Joi.
+
+### Error handling
+
+Use `handleError` from `@/common/error-handlers/error.handler` in catch blocks.
+
+### Controller patterns
+
+- Swagger decorators: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiBody`, `@ApiBearerAuth`
+- Auth: `@Auth(AuthType.None)` for public endpoints, `@ApiBearerAuth()` for protected
+- Use `@ActiveUser()` decorator for accessing the authenticated user
+
+### File size limits
+
+- No provider or service file may exceed 350-400 lines. If logic is complex, split it into separate action provider files (e.g. `create-order.provider.ts`, `cancel-order.provider.ts`).
+- Reusable utility functions shared across modules belong in `src/common/helpers/`.
+
+### Entity organization
+
+- If a module has a single entity, it lives at the module level (e.g. `feature/feature.entity.ts`).
+- If a module has multiple entities, create an `entities/` folder and place each in its own file (e.g. `feature/entities/order.entity.ts`, `feature/entities/order-item.entity.ts`).
+
+### Seeders
+
+Seeders live in `src/database/seeds/` and are standalone `ts-node` scripts -- they do **not** bootstrap the NestJS application. They connect to the database directly via a raw `DataSource`, load env vars using `dotenv`, and must be run with `tsconfig.seed.json` (which overrides `module` to `commonjs` to avoid `nodenext` issues).
+
+Run the admin seeder:
+
+```bash
+npm run seed:admin
+```
+
+Seeder credentials are controlled by `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in the active env file.
+
+When creating a new seeder:
+- Place it at `src/database/seeds/<name>.seeder.ts`
+- Use relative imports (no `@/` aliases -- tsconfig-paths is registered but keep it simple)
+- Load env at the top: `dotenv.config({ path: path.resolve(process.cwd(), '.env.${env}') })`
+- Always call `dataSource.destroy()` after finishing
+- Add a corresponding `seed:<name>` script in `package.json` following the same pattern as `seed:admin`
+
+### Env files
+
+Selected by `NODE_ENV`: `.env.development`, `.env.production`, etc. Fallback: `.env`.
+
+## Skills
+
+Agent skills live in `.agent/skills/`. Each skill is a directory containing a `SKILL.md` with YAML frontmatter (`name`, `description`) and step-by-step instructions.
+
+| Skill | Description |
+|-------|-------------|
+| [add-aws-s3](.agent/skills/add-aws-s3/SKILL.md) | Adds AWS SDK + S3 uploads module to the project |
+| [add-stripe](.agent/skills/add-stripe/SKILL.md) | Adds Stripe SDK, config, webhooks, and optional connected accounts |
+| [add-sockets](.agent/skills/add-sockets/SKILL.md) | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService |
