@@ -54,9 +54,8 @@ export class SignupUserProvider {
         throw new RequestTimeoutException('Failed to create user record');
       }
 
-      let auth: Auth | null = null;
       try {
-        auth = await this.authService.createAuth(
+        await this.authService.createAuth(
           {
             email: signupUserDto.email,
             password: signupUserDto.password,
