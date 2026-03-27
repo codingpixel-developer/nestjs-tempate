@@ -120,3 +120,5 @@ Agent skills live in `.agent/skills/`. Each skill is a directory containing a `S
 | [add-aws-s3](.agent/skills/add-aws-s3/SKILL.md) | Adds AWS SDK + S3 uploads module to the project |
 | [add-stripe](.agent/skills/add-stripe/SKILL.md) | Adds Stripe SDK, config, webhooks, and optional connected accounts |
 | [add-sockets](.agent/skills/add-sockets/SKILL.md) | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService |
+| [write-dockerfile](.agent/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore for the project — asks for app name and port first |
+| [github-workflow-docker-deploy](.agent/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to build and deploy a Docker image via SSH — asks for environment, env file path, app name, and port |
