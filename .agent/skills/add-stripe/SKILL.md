@@ -18,9 +18,9 @@ Use `AskQuestion` (or ask conversationally) for each:
 
 1. **Connected accounts?** -- Does the project need Stripe Connect (connected accounts)? (Yes / No)
 2. **Account webhooks?** -- Add webhook endpoint for the main Stripe account? (Yes / No)
-3. *(Only if Q2 = Yes)* **Payment method?** -- Which payment flow? (Checkout / Payment Intent / Both)
-4. *(Only if Q1 = Yes)* **Connected account webhooks?** -- Add webhook endpoint for connected accounts? (Yes / No)
-5. *(Only if Q4 = Yes)* **Connected payment method?** -- Which payment flow for connected accounts? (Checkout / Payment Intent / Both)
+3. _(Only if Q2 = Yes)_ **Payment method?** -- Which payment flow? (Checkout / Payment Intent / Both)
+4. _(Only if Q1 = Yes)_ **Connected account webhooks?** -- Add webhook endpoint for connected accounts? (Yes / No)
+5. _(Only if Q4 = Yes)_ **Connected payment method?** -- Which payment flow for connected accounts? (Checkout / Payment Intent / Both)
 
 ---
 
@@ -123,7 +123,7 @@ export class StripeService implements OnModuleInit {
   onModuleInit() {
     const config = this.configService.get<StripeConfig>('stripe');
     this.stripe = new Stripe(config.secretKey, {
-      apiVersion: '2025-01-27.acacia',
+      apiVersion: '2026-03-25.dahlia',
     });
   }
 }
