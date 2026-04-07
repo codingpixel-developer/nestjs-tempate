@@ -1,5 +1,5 @@
 import { Auth } from '@/auths/entities/auth.entity';
-import { AuthsService } from '@/auths/providers/auths.service';
+import { AuthsService } from '@/auths/providers/auths.service/auths.service';
 import { handleError } from '@/common/error-handlers/error.handler';
 import {
   BadRequestException,
@@ -9,9 +9,9 @@ import {
   RequestTimeoutException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { SignupUserDto } from '../dtos/signup-user.dto';
-import { UserType } from '../enums/user-type.enum';
-import { User } from '../entities/user.entity';
+import { SignupUserDto } from '../../dtos/signup-user.dto';
+import { UserType } from '../../enums/user-type.enum';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class SignupUserProvider {

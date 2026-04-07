@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
-import { SignupUserDto } from '../dtos/signup-user.dto';
-import { UpdateCurrentUserDto } from '../dtos/update-current-user.dto';
-import { User } from '../entities/user.entity';
-import { SignupUserProvider } from './signup-user.provider';
-import { UpdateUserProvider } from './update-user.provider';
+import { SignupUserDto } from '../../dtos/signup-user.dto';
+import { UpdateCurrentUserDto } from '../../dtos/update-current-user.dto';
+import { User } from '../../entities/user.entity';
+import { SignupUserProvider } from '../signup-user.provider/signup-user.provider';
+import { UpdateUserProvider } from '../update-user.provider/update-user.provider';
 
 @Injectable()
 export class UsersService {

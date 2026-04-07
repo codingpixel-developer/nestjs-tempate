@@ -21,7 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SignupUserDto } from './dtos/signup-user.dto';
-import { UsersService } from './providers/users.service';
+import { UsersService } from './providers/users.service/users.service';
 import { PaginationQueryDto } from '@/common/pagination/dtos/pagination-query.dto';
 import { UpdateCurrentUserDto } from './dtos/update-current-user.dto';
 import { Auth } from '@/auths/decorators/auth.decorator';

@@ -14,7 +14,7 @@ import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { AuthType } from './enums/auth-type.enum';
-import { AuthsService } from './providers/auths.service';
+import { AuthsService } from './providers/auths.service/auths.service';
 
 @ApiTags('Auth')
 @Controller('auth')

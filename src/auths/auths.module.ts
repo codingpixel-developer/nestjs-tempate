@@ -3,19 +3,19 @@ import { AuthsController } from './auths.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Auth } from './entities/auth.entity';
 import { ResetToken } from './entities/reset-token.entity';
-import { AuthsService } from './providers/auths.service';
+import { AuthsService } from './providers/auths.service/auths.service';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from '@/config/jwt.config';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '@/users/users.module';
 import { HashingProvider } from './providers/hashing.provider';
-import { BcryptProvider } from './providers/bcrypt.provider';
-import { ChangePasswordProvider } from './providers/change-password.provider';
-import { ResetPasswordProvider } from './providers/reset-password.provider';
-import { ForgotPasswordProvider } from './providers/forgot-password.provider';
-import { RefreshTokenProvider } from './providers/refresh-token.provider';
-import { LoginProvider } from './providers/login.provider';
-import { GenerateTokensProvider } from './providers/generate-tokens.provider';
+import { BcryptProvider } from './providers/bcrypt.provider/bcrypt.provider';
+import { ChangePasswordProvider } from './providers/change-password.provider/change-password.provider';
+import { ResetPasswordProvider } from './providers/reset-password.provider/reset-password.provider';
+import { ForgotPasswordProvider } from './providers/forgot-password.provider/forgot-password.provider';
+import { RefreshTokenProvider } from './providers/refresh-token.provider/refresh-token.provider';
+import { LoginProvider } from './providers/login.provider/login.provider';
+import { GenerateTokensProvider } from './providers/generate-tokens.provider/generate-tokens.provider';
 
 @Module({
   controllers: [AuthsController],

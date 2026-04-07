@@ -10,6 +10,7 @@ NestJS 11 authentication template with PostgreSQL, TypeORM, JWT auth, admin mana
 - **Validation**: `class-validator` + `class-transformer` (global `ValidationPipe`), Joi for env validation
 - **Mail**: `@nestjs-modules/mailer` with EJS templates
 - **Docs**: Swagger at `/api`
+- **Testing**: Jest 30, ts-jest, `@nestjs/testing`, supertest
 - **Path aliases**: `@/*` maps to `src/*`
 
 ## Architecture
@@ -38,10 +39,15 @@ Each feature module follows this layout:
 feature/
 ├── feature.module.ts
 ├── feature.controller.ts
+├── feature.controller.spec.ts
 ├── providers/
-│   ├── feature.service.ts        # Main service, delegates to action providers
-│   ├── action-name.provider.ts   # One provider per action (e.g. login.provider.ts)
-│   └── another-action.provider.ts
+│   ├── feature.service/            # Folder when spec exists
+│   │   ├── feature.service.ts
+│   │   └── feature.service.spec.ts
+│   ├── action-name.provider/       # One provider per action (e.g. login.provider/)
+│   │   ├── action-name.provider.ts
+│   │   └── action-name.provider.spec.ts
+│   └── standalone.provider.ts      # Plain file when no spec
 ├── dtos/
 ├── entities/
 ├── enums/
@@ -111,6 +117,66 @@ When creating a new seeder:
 
 Selected by `NODE_ENV`: `.env.development`, `.env.production`, etc. Fallback: `.env`.
 
+## Testing
+
+### Mandatory rules
+
+- Every new module, controller endpoint, or provider **MUST** have corresponding tests. Test creation is **not optional** — the agent must never skip it.
+- After writing any module/API code, the agent **MUST pause** and present all identified edge cases to the user grouped by category before writing any test code.
+- Ask the user: "Are there any edge cases I'm missing?" — only proceed after confirmation.
+- After writing tests, run `npm test` and `npm run test:e2e` to verify all pass.
+
+### Three test layers
+
+| Layer | File pattern | Location | What it tests |
+|-------|-------------|----------|---------------|
+| Unit | `*.spec.ts` | Inside provider folder alongside source | Each provider/service in isolation, all deps mocked |
+| Controller | `*.controller.spec.ts` | Next to controller file | HTTP layer, route handling, delegates to service |
+| E2E | `*.e2e-spec.ts` | `test/` directory | Full request lifecycle with supertest |
+
+### Test file placement
+
+When a provider has a test spec file, promote it to a **folder** named after the provider containing both the source and spec files. Providers without tests stay as plain files.
+
+```
+feature/
+├── feature.controller.ts
+├── feature.controller.spec.ts
+├── providers/
+│   ├── feature.service/
+│   │   ├── feature.service.ts
+│   │   └── feature.service.spec.ts
+│   ├── action.provider/
+│   │   ├── action.provider.ts
+│   │   └── action.provider.spec.ts
+│   └── standalone.provider.ts      # no spec → stays as a file
+test/
+└── feature.e2e-spec.ts
+```
+
+### Edge case categories
+
+When building the edge case matrix for any module, cover ALL of these:
+
+- **Validation:** DTO constraints, regex patterns, required fields, whitelist rejection, type coercion
+- **Auth/Authorization:** Missing token, expired token, wrong role, wrong token type, deleted user after token issued
+- **Business logic:** Happy path, duplicate data, not found, state conflicts, same-password-as-old checks
+- **Database:** Transaction rollback on failure, connection timeout, null/missing relations, concurrent operations
+- **Error handling:** Correct exception types (`UnauthorizedException` vs `BadRequestException` vs `NotFoundException`), error messages, `handleError` catch blocks
+- **Boundary conditions:** Empty strings, zero/negative IDs, null vs undefined optional fields, max-length strings
+- **Response format:** Correct return values, message strings, token structure
+
+### Mocking conventions
+
+- Use `Test.createTestingModule` with provider overrides for DI mocking
+- Mock repositories: `{ provide: getRepositoryToken(Entity), useValue: { findOne: jest.fn(), save: jest.fn(), ... } }`
+- Mock abstract providers: `{ provide: HashingProvider, useValue: { hashPassword: jest.fn(), comparePassword: jest.fn() } }`
+- Mock DataSource/QueryRunner: create a mock `queryRunner` object with `connect`, `startTransaction`, `commitTransaction`, `rollbackTransaction`, `release`, and `manager` methods
+- Never mock the class under test
+- Reset all mocks in `beforeEach` by rebuilding the test module
+- `console.error` is globally silenced in tests via `src/test-setup.ts` (`setupFilesAfterEnv` in Jest config) — this suppresses noise from `handleError`'s default branch during error-path tests
+- When moving a provider into a folder for testing, update all imports across the codebase (e.g., `./providers/feature.service` → `./providers/feature.service/feature.service`)
+
 ## Skills
 
 Agent skills live in `.agent/skills/`. Each skill is a directory containing a `SKILL.md` with YAML frontmatter (`name`, `description`) and step-by-step instructions.
@@ -122,3 +188,4 @@ Agent skills live in `.agent/skills/`. Each skill is a directory containing a `S
 | [add-sockets](.agent/skills/add-sockets/SKILL.md) | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService |
 | [write-dockerfile](.agent/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore for the project — asks for app name and port first |
 | [github-workflow-docker-deploy](.agent/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to build and deploy a Docker image via SSH — asks for environment, env file path, app name, and port |
+| [create-unit-tests](.agent/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests for a module — identifies edge cases and asks for confirmation before writing |

@@ -2,9 +2,9 @@ import { handleError } from '@/common/error-handlers/error.handler';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
-import { Auth } from '../entities/auth.entity';
-import { GenerateTokensProvider } from './generate-tokens.provider';
+import { ForgotPasswordDto } from '../../dtos/forgot-password.dto';
+import { Auth } from '../../entities/auth.entity';
+import { GenerateTokensProvider } from '../generate-tokens.provider/generate-tokens.provider';
 import { MailsService } from '@/mails/providers/mail.service';
 
 @Injectable()

@@ -6,8 +6,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { UpdateCurrentUserDto } from '../dtos/update-current-user.dto';
-import { User } from '../entities/user.entity';
+import { UpdateCurrentUserDto } from '../../dtos/update-current-user.dto';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class UpdateUserProvider {

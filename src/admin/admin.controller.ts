@@ -10,7 +10,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AdminLoginDto } from './dto/admin-login.dto';
-import { AdminService } from './providers/admin.service';
+import { AdminService } from './providers/admin.service/admin.service';
 import { AdminChangePasswordDto } from './dto/admin-change-password.dto';
 
 @ApiTags('Admin')

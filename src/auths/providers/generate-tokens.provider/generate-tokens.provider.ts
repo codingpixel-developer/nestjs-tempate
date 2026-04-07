@@ -6,9 +6,9 @@ import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import jwtConfig from '../../config/jwt.config';
-import { Auth } from '../entities/auth.entity';
-import { ResetToken } from '../entities/reset-token.entity';
+import jwtConfig from '../../../config/jwt.config';
+import { Auth } from '../../entities/auth.entity';
+import { ResetToken } from '../../entities/reset-token.entity';
 import { ActiveUserData } from '@/common/interfaces/active-user-data.interface';
 import { Admin } from '@/admin/entities/admin.entity';
 

@@ -9,9 +9,9 @@ import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import jwtConfig from '../../config/jwt.config';
-import { UsersService } from 'src/users/providers/users.service';
+import { UsersService } from '@/users/providers/users.service/users.service';
 import { UserType } from '@/users/enums/user-type.enum';
-import { AdminService } from '@/admin/providers/admin.service';
+import { AdminService } from '@/admin/providers/admin.service/admin.service';
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(
