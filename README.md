@@ -41,6 +41,7 @@ A production-ready NestJS 11 template with JWT authentication, role-based access
 | Auth       | `@nestjs/jwt`, bcryptjs                     |
 | Email      | `@nestjs-modules/mailer` + EJS              |
 | Validation | `class-validator`, `class-transformer`, Joi |
+| Testing    | Jest 30, ts-jest, `@nestjs/testing`, supertest |
 | Docs       | `@nestjs/swagger`                           |
 
 ## Project Setup
@@ -153,6 +154,7 @@ src/
 ## Coding Conventions
 
 - **Provider-per-action**: each complex operation lives in its own `action-name.provider.ts`; the main `feature.service.ts` delegates to providers.
+- **Provider folders**: when a provider has a test spec, it becomes a folder containing both source and spec (e.g., `providers/login.provider/login.provider.ts` + `login.provider.spec.ts`). Providers without tests stay as plain files.
 - **File size**: no provider or service exceeds 350-400 lines; split further if needed.
 - **Shared helpers**: reusable utilities go in `src/common/helpers/`.
 - **Entities**: single entity lives at module level (`feature/feature.entity.ts`); multiple entities go in `feature/entities/`.
@@ -169,6 +171,9 @@ Agent skills live in `.agent/skills/`. Each skill is a directory with a `SKILL.m
 | [add-aws-s3](.agent/skills/add-aws-s3/SKILL.md)   | Adds AWS SDK + S3 uploads module                          |
 | [add-stripe](.agent/skills/add-stripe/SKILL.md)   | Adds Stripe with webhooks and optional connected accounts |
 | [add-sockets](.agent/skills/add-sockets/SKILL.md) | Adds Socket.IO with JWT auth and injectable SocketService |
+| [write-dockerfile](.agent/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore |
+| [github-workflow-docker-deploy](.agent/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH |
+| [create-unit-tests](.agent/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests with edge case review |
 
 See [CLAUDE.md](CLAUDE.md) for full project conventions used by Claude.
 
@@ -182,6 +187,23 @@ npm run seed:admin
 ```
 
 The admin credentials are set via `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in your env file. The seeder is idempotent -- it skips insertion if the email already exists.
+
+## Testing
+
+The project uses Jest 30 with `@nestjs/testing` and supertest. All modules have comprehensive test coverage across three layers:
+
+- **Unit tests** (`*.spec.ts`) — provider logic in isolation with mocked dependencies
+- **Controller tests** (`*.controller.spec.ts`) — HTTP layer delegation
+- **E2E tests** (`test/*.e2e-spec.ts`) — full request lifecycle with validation
+
+```bash
+npm test              # Run all unit + controller tests
+npm run test:e2e      # Run E2E tests
+npm run test:cov      # Coverage report
+npm run test:watch    # Watch mode
+```
+
+`console.error` is globally silenced in tests via `src/test-setup.ts` to suppress expected noise from error-path tests.
 
 ## Scripts
 

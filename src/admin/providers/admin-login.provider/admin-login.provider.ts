@@ -1,10 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Admin } from '../entities/admin.entity';
-import { AdminLoginDto } from '../dto/admin-login.dto';
+import { Admin } from '../../entities/admin.entity';
+import { AdminLoginDto } from '../../dto/admin-login.dto';
 import { HashingProvider } from '@/auths/providers/hashing.provider';
-import { GenerateTokensProvider } from '@/auths/providers/generate-tokens.provider';
+import { GenerateTokensProvider } from '@/auths/providers/generate-tokens.provider/generate-tokens.provider';
 import { handleError } from '@/common/error-handlers/error.handler';
 
 @Injectable()

@@ -1,19 +1,19 @@
 import { Injectable, RequestTimeoutException } from '@nestjs/common';
 import { QueryRunner } from 'typeorm';
-import { handleError } from '../../common/error-handlers/error.handler';
-import { ChangePasswordDto } from '../dtos/change-password.dto';
-import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
-import { LoginDto } from '../dtos/login.dto';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
-import { ResetPasswordDto } from '../dtos/reset-password.dto';
-import { Auth } from '../entities/auth.entity';
-import { AuthData } from '../interfaces/auth-data.interface';
-import { ChangePasswordProvider } from './change-password.provider';
-import { ForgotPasswordProvider } from './forgot-password.provider';
-import { HashingProvider } from './hashing.provider';
-import { LoginProvider } from './login.provider';
-import { RefreshTokenProvider } from './refresh-token.provider';
-import { ResetPasswordProvider } from './reset-password.provider';
+import { handleError } from '../../../common/error-handlers/error.handler';
+import { ChangePasswordDto } from '../../dtos/change-password.dto';
+import { ForgotPasswordDto } from '../../dtos/forgot-password.dto';
+import { LoginDto } from '../../dtos/login.dto';
+import { RefreshTokenDto } from '../../dtos/refresh-token.dto';
+import { ResetPasswordDto } from '../../dtos/reset-password.dto';
+import { Auth } from '../../entities/auth.entity';
+import { AuthData } from '../../interfaces/auth-data.interface';
+import { ChangePasswordProvider } from '../change-password.provider/change-password.provider';
+import { ForgotPasswordProvider } from '../forgot-password.provider/forgot-password.provider';
+import { HashingProvider } from '../hashing.provider';
+import { LoginProvider } from '../login.provider/login.provider';
+import { RefreshTokenProvider } from '../refresh-token.provider/refresh-token.provider';
+import { ResetPasswordProvider } from '../reset-password.provider/reset-password.provider';
 
 @Injectable()
 export class AuthsService {

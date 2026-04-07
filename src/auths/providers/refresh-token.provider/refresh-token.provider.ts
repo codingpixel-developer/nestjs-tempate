@@ -8,9 +8,9 @@ import {
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
-import { GenerateTokensProvider } from './generate-tokens.provider';
-import { UsersService } from '@/users/providers/users.service';
+import { RefreshTokenDto } from '../../dtos/refresh-token.dto';
+import { GenerateTokensProvider } from '../generate-tokens.provider/generate-tokens.provider';
+import { UsersService } from '@/users/providers/users.service/users.service';
 import { User } from '@/users/entities/user.entity';
 
 @Injectable()

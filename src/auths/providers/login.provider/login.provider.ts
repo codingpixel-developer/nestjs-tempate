@@ -2,10 +2,10 @@ import { handleError } from '@/common/error-handlers/error.handler';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { LoginDto } from '../dtos/login.dto';
-import { Auth } from '../entities/auth.entity';
-import { GenerateTokensProvider } from './generate-tokens.provider';
-import { HashingProvider } from './hashing.provider';
+import { LoginDto } from '../../dtos/login.dto';
+import { Auth } from '../../entities/auth.entity';
+import { GenerateTokensProvider } from '../generate-tokens.provider/generate-tokens.provider';
+import { HashingProvider } from '../hashing.provider';
 
 @Injectable()
 export class LoginProvider {

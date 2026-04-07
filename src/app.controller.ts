@@ -9,7 +9,7 @@ import { AuthType } from './auths/enums/auth-type.enum';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get('/health')
+  @Get('')
   @ApiOperation({ summary: 'Health check' })
   @ApiResponse({
     status: 200,

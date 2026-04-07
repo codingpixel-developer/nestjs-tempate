@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Auth } from '../entities/auth.entity';
-import { HashingProvider } from './hashing.provider';
-import { ChangePasswordDto } from '../dtos/change-password.dto';
+import { Auth } from '../../entities/auth.entity';
+import { HashingProvider } from '../hashing.provider';
+import { ChangePasswordDto } from '../../dtos/change-password.dto';
 import { handleError } from '@/common/error-handlers/error.handler';
 
 @Injectable()
