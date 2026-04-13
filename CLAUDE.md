@@ -84,6 +84,25 @@ Use `handleError` from `@/common/error-handlers/error.handler` in catch blocks.
 - Auth: `@Auth(AuthType.None)` for public endpoints, `@ApiBearerAuth()` for protected
 - Use `@ActiveUser()` decorator for accessing the authenticated user
 
+### Function length
+
+If a function is growing long due to `if/else` or conditional logic, split it into separate focused functions rather than one long branching function:
+
+```typescript
+// ❌ One long method with branches
+async handle(type: 'create' | 'update') {
+  if (type === 'create') {
+    // 20 lines
+  } else {
+    // 20 lines
+  }
+}
+
+// ✅ Two focused methods
+async handleCreate() { ... }
+async handleUpdate() { ... }
+```
+
 ### File size limits
 
 - No provider or service file may exceed 350-400 lines. If logic is complex, split it into separate action provider files (e.g. `create-order.provider.ts`, `cancel-order.provider.ts`).
@@ -108,9 +127,12 @@ Seeder credentials are controlled by `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD
 
 When creating a new seeder:
 - Place it at `src/database/seeds/<name>.seeder.ts`
-- Use relative imports (no `@/` aliases -- tsconfig-paths is registered but keep it simple)
-- Load env at the top: `dotenv.config({ path: path.resolve(process.cwd(), '.env.${env}') })`
-- Always call `dataSource.destroy()` after finishing
+- Use relative imports (no `@/` aliases)
+- Load env conditionally: `const env = process.env.NODE_ENV || ''; dotenv.config({ path: path.resolve(process.cwd(), env ? '.env.${env}' : '.env') })`
+- Define `DataSource` inline with explicit entity list and `synchronize: false`
+- Check for existing record before inserting (idempotent)
+- Call `dataSource.destroy()` in both early-return and success paths
+- Export nothing — end with `seed().catch((err) => { console.error('Seeder failed:', err); process.exit(1); })`
 - Add a corresponding `seed:<name>` script in `package.json` following the same pattern as `seed:admin`
 
 ### Env files

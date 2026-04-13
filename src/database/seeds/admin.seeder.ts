@@ -4,8 +4,10 @@ import * as path from 'path';
 import { DataSource } from 'typeorm';
 import { Admin } from '../../admin/entities/admin.entity';
 
-const env = process.env.NODE_ENV || 'development';
-dotenv.config({ path: path.resolve(process.cwd(), `.env.${env}`) });
+const env = process.env.NODE_ENV || '';
+dotenv.config({
+  path: path.resolve(process.cwd(), env ? `.env.${env}` : '.env'),
+});
 
 const dataSource = new DataSource({
   type: 'postgres',
