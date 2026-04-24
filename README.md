@@ -164,16 +164,16 @@ src/
 
 ## Agent Skills
 
-Agent skills live in `.agent/skills/`. Each skill is a directory with a `SKILL.md` that an AI agent reads to add a new integration to the project.
+Agent skills live in `.claude/skills/`. Each skill is a directory with a `SKILL.md` that an AI agent reads to add a new integration to the project.
 
 | Skill                                             | Description                                               |
 | ------------------------------------------------- | --------------------------------------------------------- |
-| [add-aws-s3](.agent/skills/add-aws-s3/SKILL.md)   | Adds AWS SDK + S3 uploads module                          |
-| [add-stripe](.agent/skills/add-stripe/SKILL.md)   | Adds Stripe with webhooks and optional connected accounts |
-| [add-sockets](.agent/skills/add-sockets/SKILL.md) | Adds Socket.IO with JWT auth and injectable SocketService |
-| [write-dockerfile](.agent/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore |
-| [github-workflow-docker-deploy](.agent/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH |
-| [create-unit-tests](.agent/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests with edge case review |
+| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)   | Adds AWS SDK + S3 uploads module                          |
+| [add-stripe](.claude/skills/add-stripe/SKILL.md)   | Adds Stripe with webhooks and optional connected accounts |
+| [add-sockets](.claude/skills/add-sockets/SKILL.md) | Adds Socket.IO with JWT auth and injectable SocketService |
+| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore |
+| [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH |
+| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests with edge case review |
 
 See [CLAUDE.md](CLAUDE.md) for full project conventions used by Claude.
 
