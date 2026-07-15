@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -11,6 +12,10 @@ async function bootstrap() {
   // logging) behind a reverse proxy / load balancer. Adjust the count to match
   // how many proxies sit in front of the app.
   app.set('trust proxy', 1);
+
+  // Security headers. CSP is disabled because the Swagger UI (/api) serves
+  // inline scripts/styles; JSON API responses are unaffected by CSP.
+  app.use(helmet({ contentSecurityPolicy: false }));
 
   // Enable CORS
   app.enableCors({
