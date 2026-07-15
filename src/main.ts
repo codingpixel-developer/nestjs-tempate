@@ -1,10 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Trust the first proxy hop so `req.ip` is the real client IP (throttling,
+  // logging) behind a reverse proxy / load balancer. Adjust the count to match
+  // how many proxies sit in front of the app.
+  app.set('trust proxy', 1);
 
   // Enable CORS
   app.enableCors({

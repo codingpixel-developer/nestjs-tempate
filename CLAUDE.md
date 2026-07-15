@@ -67,9 +67,12 @@ export interface FooConfig {
   bar: string;
 }
 
-export default registerAs('foo', (): FooConfig => ({
-  bar: process.env.FOO_BAR || 'default',
-}));
+export default registerAs(
+  'foo',
+  (): FooConfig => ({
+    bar: process.env.FOO_BAR || 'default',
+  }),
+);
 ```
 
 Configs are loaded in `app.module.ts` via `ConfigModule.forRoot({ load: [...] })`. Env vars are validated in `src/config/env.validation.ts` using Joi.
@@ -96,6 +99,10 @@ export class User {
   profileImage: string; // 'uploads/x.jpg' → 'https://api.example.com/uploads/x.jpg'
 }
 ```
+
+### Rate limiting
+
+Global rate limiting via `@nestjs/throttler`. `ThrottlerModule` is configured in `app.module.ts` from `throttle.config.ts` (`THROTTLE_TTL` seconds / `THROTTLE_LIMIT` per IP, default 60/60), and `ThrottlerGuard` is a global `APP_GUARD` registered **before** `AuthenticationGuard` (so unauthenticated abuse is counted). Auth endpoints are hardened with tighter per-route limits via `@Throttle()` (login 5/60s, forgot/reset-password 3/60s). Override a route with `@Throttle({ default: { limit, ttl } })`, exempt one with `@SkipThrottle()`. Exceeding a limit returns **429**.
 
 ### Controller patterns
 
@@ -145,6 +152,7 @@ npm run seed:admin
 Seeder credentials are controlled by `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in the active env file.
 
 When creating a new seeder:
+
 - Place it at `src/database/seeds/<name>.seeder.ts`
 - Use relative imports (no `@/` aliases)
 - Load env conditionally: `const env = process.env.NODE_ENV || ''; dotenv.config({ path: path.resolve(process.cwd(), env ? '.env.${env}' : '.env') })`
@@ -169,11 +177,11 @@ Selected by `NODE_ENV`: `.env.development`, `.env.production`, etc. Fallback: `.
 
 ### Three test layers
 
-| Layer | File pattern | Location | What it tests |
-|-------|-------------|----------|---------------|
-| Unit | `*.spec.ts` | Inside provider folder alongside source | Each provider/service in isolation, all deps mocked |
-| Controller | `*.controller.spec.ts` | Next to controller file | HTTP layer, route handling, delegates to service |
-| E2E | `*.e2e-spec.ts` | `test/` directory | Full request lifecycle with supertest |
+| Layer      | File pattern           | Location                                | What it tests                                       |
+| ---------- | ---------------------- | --------------------------------------- | --------------------------------------------------- |
+| Unit       | `*.spec.ts`            | Inside provider folder alongside source | Each provider/service in isolation, all deps mocked |
+| Controller | `*.controller.spec.ts` | Next to controller file                 | HTTP layer, route handling, delegates to service    |
+| E2E        | `*.e2e-spec.ts`        | `test/` directory                       | Full request lifecycle with supertest               |
 
 ### Test file placement
 
@@ -222,11 +230,11 @@ When building the edge case matrix for any module, cover ALL of these:
 
 Agent skills live in `.claude/skills/`. Each skill is a directory containing a `SKILL.md` with YAML frontmatter (`name`, `description`) and step-by-step instructions.
 
-| Skill | Description |
-|-------|-------------|
-| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md) | Adds AWS SDK + S3 uploads module to the project |
-| [add-stripe](.claude/skills/add-stripe/SKILL.md) | Adds Stripe SDK, config, webhooks, and optional connected accounts |
-| [add-sockets](.claude/skills/add-sockets/SKILL.md) | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService |
-| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore for the project — asks for app name and port first |
+| Skill                                                                                  | Description                                                                                                                            |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)                                       | Adds AWS SDK + S3 uploads module to the project                                                                                        |
+| [add-stripe](.claude/skills/add-stripe/SKILL.md)                                       | Adds Stripe SDK, config, webhooks, and optional connected accounts                                                                     |
+| [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService                                                         |
+| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore for the project — asks for app name and port first                                |
 | [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to build and deploy a Docker image via SSH — asks for environment, env file path, app name, and port |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests for a module — identifies edge cases and asks for confirmation before writing |
+| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Creates comprehensive unit, controller, and E2E tests for a module — identifies edge cases and asks for confirmation before writing    |

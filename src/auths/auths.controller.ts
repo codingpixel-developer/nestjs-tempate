@@ -7,6 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Auth } from './decorators/auth.decorator';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
@@ -22,6 +23,7 @@ export class AuthsController {
   constructor(private readonly authService: AuthsService) {}
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email and password' })
@@ -46,6 +48,7 @@ export class AuthsController {
   }
 
   @Post('forgot-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset email' })
@@ -58,6 +61,7 @@ export class AuthsController {
   }
 
   @Post('reset-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using token' })
@@ -70,6 +74,7 @@ export class AuthsController {
   }
 
   @Post('change-password')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Auth(AuthType.Bearer)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)

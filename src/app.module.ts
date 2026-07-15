@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig, { DatabaseConfig } from './config/database.config';
 import appConfig from './config/app.config';
 import mailConfig from './config/mail.config';
+import throttleConfig, { ThrottleConfig } from './config/throttle.config';
 import validationSchema from './config/env.validation';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
@@ -15,6 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessTokenGuard } from './auths/guards/access-token.guard';
 import { AdminGuard } from './auths/guards/admin.guard';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthenticationGuard } from './auths/guards/authentication.guard';
 import { DataResponseInterceptor } from './common/interceptors/data-response.interceptor';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
@@ -29,9 +31,17 @@ const ENV = process.env.NODE_ENV;
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, appConfig, mailConfig],
+      load: [databaseConfig, appConfig, mailConfig, throttleConfig],
       validationSchema,
       envFilePath: !ENV ? '.env' : `.env.${ENV}`,
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const config = configService.get<ThrottleConfig>('throttle');
+        return [{ ttl: config?.ttl ?? 60000, limit: config?.limit ?? 60 }];
+      },
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -71,6 +81,10 @@ const ENV = process.env.NODE_ENV;
     AppService,
     AccessTokenGuard,
     AdminGuard,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: AuthenticationGuard,
