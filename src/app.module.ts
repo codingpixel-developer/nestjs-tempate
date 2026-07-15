@@ -17,6 +17,9 @@ import { AdminGuard } from './auths/guards/admin.guard';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthenticationGuard } from './auths/guards/authentication.guard';
 import { DataResponseInterceptor } from './common/interceptors/data-response.interceptor';
+import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
+import { AssetUrlTransformer } from './common/transformers/asset-url.transformer';
+import { RESPONSE_TRANSFORMERS } from './common/transformers/response-transformer.interface';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AdminModule } from './admin/admin.module';
 
@@ -75,6 +78,16 @@ const ENV = process.env.NODE_ENV;
     {
       provide: APP_INTERCEPTOR,
       useClass: DataResponseInterceptor,
+    },
+    AssetUrlTransformer,
+    {
+      provide: RESPONSE_TRANSFORMERS,
+      useFactory: (assetUrl: AssetUrlTransformer) => [assetUrl],
+      inject: [AssetUrlTransformer],
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTransformInterceptor,
     },
   ],
 })

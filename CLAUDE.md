@@ -18,7 +18,7 @@ NestJS 11 authentication template with PostgreSQL, TypeORM, JWT auth, admin mana
 ```
 src/
 ├── config/          # registerAs config factories + Joi env validation
-├── common/          # Shared decorators, interceptors, middleware, error handlers, pagination
+├── common/          # Shared decorators, interceptors, middleware, transformers, error handlers, pagination
 ├── database/
 │   └── seeds/       # Standalone ts-node seeders (run outside NestJS bootstrap)
 ├── auths/           # Auth module (login, refresh, password reset, guards)
@@ -81,6 +81,21 @@ Use `handleError` from `@/common/error-handlers/error.handler` in catch blocks.
 ### Request logging
 
 Every HTTP request is logged by `LoggerMiddleware` (`src/common/middleware/logger.middleware.ts`), wired globally in `app.module.ts` via `configure()` + `forRoutes('*')`. On response finish it logs `method url status durationMs - ip`: 2xx/3xx at `log`, 4xx and slow requests (>1000ms) at `warn`, 5xx at `error`. Swagger (`/api`) and `/health` paths are skipped; request/response bodies are never logged.
+
+### Response transformers
+
+Outgoing responses pass through a global, extensible transformer pipeline. `ResponseTransformInterceptor` (global `APP_INTERCEPTOR`) runs every transformer registered under the `RESPONSE_TRANSFORMERS` token (`src/common/transformers/`). To add a global transformation, implement `ResponseTransformer` (`transform(payload) => payload`) and add it to that array in `app.module.ts` — no interceptor changes needed.
+
+The first transformer, `AssetUrlTransformer`, expands relative asset paths into full URLs. Mark asset fields with `@AssetUrl()` (`src/common/decorators/asset-url.decorator.ts`) and set `APP_URL` (the server's public base URL) in the env; the transformer prepends it, skipping already-absolute URLs and empty values. Matching is by field **name** (responses are plain objects by the time the interceptor runs), so keep asset field names distinctive.
+
+```typescript
+@Entity()
+export class User {
+  @AssetUrl()
+  @Column()
+  profileImage: string; // 'uploads/x.jpg' → 'https://api.example.com/uploads/x.jpg'
+}
+```
 
 ### Controller patterns
 
