@@ -26,6 +26,7 @@ import { RESPONSE_TRANSFORMERS } from './common/transformers/response-transforme
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AdminModule } from './admin/admin.module';
 import { RedisModule } from './redis/redis.module';
+import { QueueModule } from './queue/queue.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -84,6 +85,7 @@ const ENV = process.env.NODE_ENV;
     MailsModule,
     AdminModule,
     RedisModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [

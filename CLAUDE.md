@@ -108,6 +108,10 @@ Global rate limiting via `@nestjs/throttler`. `ThrottlerModule` is configured in
 
 A global `RedisModule` (`src/redis/`) provides a shared `ioredis` client (`REDIS_CLIENT`) built from `redis.config.ts` (`REDIS_URL`, default `redis://localhost:6379`; connects lazily so app boot stays clean without Redis). Inject `CacheService` to cache values — `get`/`set(key, value, ttlSeconds?)`/`del`, or `wrap(key, factory, ttlSeconds?)` for get-or-set. This client is the shared Redis foundation reused by other Redis-backed features.
 
+### Queues (BullMQ)
+
+Background jobs run on BullMQ (`@nestjs/bullmq`), configured in a global `QueueModule` (`src/queue/`) from `REDIS_URL` (its own connection, `maxRetriesPerRequest: null`). Enqueue with `QueueService.enqueue(name, data, opts?)`. Jobs on the `default` queue are handled by `ExampleProcessor` (`@Processor('default')` extending `WorkerHost`) — dispatch on `job.name`. Add more queues with `BullModule.registerQueue({ name })` + a `@Processor` for each. A running Redis is required to process jobs.
+
 ### Controller patterns
 
 - Swagger decorators: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiBody`, `@ApiBearerAuth`

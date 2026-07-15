@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
+    "@nestjs/bullmq": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -38,6 +39,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "bcryptjs": "^3.0.3",
+    "bullmq": "^5.80.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",
     "ejs": "^5.0.1",
