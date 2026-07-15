@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -17,6 +17,7 @@ import { AdminGuard } from './auths/guards/admin.guard';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthenticationGuard } from './auths/guards/authentication.guard';
 import { DataResponseInterceptor } from './common/interceptors/data-response.interceptor';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AdminModule } from './admin/admin.module';
 
 const ENV = process.env.NODE_ENV;
@@ -77,4 +78,8 @@ const ENV = process.env.NODE_ENV;
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
