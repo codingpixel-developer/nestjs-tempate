@@ -104,6 +104,10 @@ export class User {
 
 Global rate limiting via `@nestjs/throttler`. `ThrottlerModule` is configured in `app.module.ts` from `throttle.config.ts` (`THROTTLE_TTL` seconds / `THROTTLE_LIMIT` per IP, default 60/60), and `ThrottlerGuard` is a global `APP_GUARD` registered **before** `AuthenticationGuard` (so unauthenticated abuse is counted). Auth endpoints are hardened with tighter per-route limits via `@Throttle()` (login 5/60s, forgot/reset-password 3/60s). Override a route with `@Throttle({ default: { limit, ttl } })`, exempt one with `@SkipThrottle()`. Exceeding a limit returns **429**.
 
+### Redis & caching
+
+A global `RedisModule` (`src/redis/`) provides a shared `ioredis` client (`REDIS_CLIENT`) built from `redis.config.ts` (`REDIS_URL`, default `redis://localhost:6379`; connects lazily so app boot stays clean without Redis). Inject `CacheService` to cache values — `get`/`set(key, value, ttlSeconds?)`/`del`, or `wrap(key, factory, ttlSeconds?)` for get-or-set. This client is the shared Redis foundation reused by other Redis-backed features.
+
 ### Controller patterns
 
 - Swagger decorators: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiBody`, `@ApiBearerAuth`

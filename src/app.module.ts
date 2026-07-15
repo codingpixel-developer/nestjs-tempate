@@ -9,6 +9,7 @@ import databaseConfig, { DatabaseConfig } from './config/database.config';
 import appConfig from './config/app.config';
 import mailConfig from './config/mail.config';
 import throttleConfig, { ThrottleConfig } from './config/throttle.config';
+import redisConfig from './config/redis.config';
 import validationSchema from './config/env.validation';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
@@ -24,6 +25,7 @@ import { AssetUrlTransformer } from './common/transformers/asset-url.transformer
 import { RESPONSE_TRANSFORMERS } from './common/transformers/response-transformer.interface';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AdminModule } from './admin/admin.module';
+import { RedisModule } from './redis/redis.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -31,7 +33,13 @@ const ENV = process.env.NODE_ENV;
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, appConfig, mailConfig, throttleConfig],
+      load: [
+        databaseConfig,
+        appConfig,
+        mailConfig,
+        throttleConfig,
+        redisConfig,
+      ],
       validationSchema,
       envFilePath: !ENV ? '.env' : `.env.${ENV}`,
     }),
@@ -75,6 +83,7 @@ const ENV = process.env.NODE_ENV;
     AuthsModule,
     MailsModule,
     AdminModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [
