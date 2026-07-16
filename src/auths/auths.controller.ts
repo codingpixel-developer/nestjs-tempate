@@ -7,6 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { Auth } from './decorators/auth.decorator';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
@@ -22,6 +23,7 @@ export class AuthsController {
   constructor(private readonly authService: AuthsService) {}
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with email and password' })
@@ -46,6 +48,7 @@ export class AuthsController {
   }
 
   @Post('forgot-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset email' })
@@ -58,6 +61,7 @@ export class AuthsController {
   }
 
   @Post('reset-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using token' })
@@ -70,6 +74,7 @@ export class AuthsController {
   }
 
   @Post('change-password')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Auth(AuthType.Bearer)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
@@ -87,5 +92,24 @@ export class AuthsController {
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
     return await this.authService.changePassword(user.id, changePasswordDto);
+  }
+
+  @Post('logout')
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke the given refresh token (logout)' })
+  @ApiResponse({ status: 200, description: 'Logged out' })
+  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
+    return await this.authService.logout(refreshTokenDto);
+  }
+
+  @Post('logout-all')
+  @Auth(AuthType.Bearer)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke all refresh tokens for the user' })
+  @ApiResponse({ status: 200, description: 'Logged out from all devices' })
+  async logoutAll(@ActiveUser() user: User) {
+    return await this.authService.logoutAll(user.id);
   }
 }

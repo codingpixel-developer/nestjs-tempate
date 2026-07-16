@@ -18,7 +18,7 @@ NestJS 11 authentication template with PostgreSQL, TypeORM, JWT auth, admin mana
 ```
 src/
 ├── config/          # registerAs config factories + Joi env validation
-├── common/          # Shared decorators, interceptors, error handlers, pagination
+├── common/          # Shared decorators, interceptors, middleware, transformers, error handlers, pagination
 ├── database/
 │   └── seeds/       # Standalone ts-node seeders (run outside NestJS bootstrap)
 ├── auths/           # Auth module (login, refresh, password reset, guards)
@@ -67,9 +67,12 @@ export interface FooConfig {
   bar: string;
 }
 
-export default registerAs('foo', (): FooConfig => ({
-  bar: process.env.FOO_BAR || 'default',
-}));
+export default registerAs(
+  'foo',
+  (): FooConfig => ({
+    bar: process.env.FOO_BAR || 'default',
+  }),
+);
 ```
 
 Configs are loaded in `app.module.ts` via `ConfigModule.forRoot({ load: [...] })`. Env vars are validated in `src/config/env.validation.ts` using Joi.
@@ -77,6 +80,45 @@ Configs are loaded in `app.module.ts` via `ConfigModule.forRoot({ load: [...] })
 ### Error handling
 
 Use `handleError` from `@/common/error-handlers/error.handler` in catch blocks.
+
+### Request logging
+
+Every HTTP request is logged by `LoggerMiddleware` (`src/common/middleware/logger.middleware.ts`), wired globally in `app.module.ts` via `configure()` + `forRoutes('*')`. On response finish it logs `method url status durationMs - ip`: 2xx/3xx at `log`, 4xx and slow requests (>1000ms) at `warn`, 5xx at `error`. Swagger (`/api`) and `/health` paths are skipped; request/response bodies are never logged.
+
+### Response transformers
+
+Outgoing responses pass through a global, extensible transformer pipeline. `ResponseTransformInterceptor` (global `APP_INTERCEPTOR`) runs every transformer registered under the `RESPONSE_TRANSFORMERS` token (`src/common/transformers/`). To add a global transformation, implement `ResponseTransformer` (`transform(payload) => payload`) and add it to that array in `app.module.ts` — no interceptor changes needed.
+
+The first transformer, `AssetUrlTransformer`, expands relative asset paths into full URLs. Mark asset fields with `@AssetUrl()` (`src/common/decorators/asset-url.decorator.ts`) and set `APP_URL` (the server's public base URL) in the env; the transformer prepends it, skipping already-absolute URLs and empty values. Matching is by field **name** (responses are plain objects by the time the interceptor runs), so keep asset field names distinctive.
+
+```typescript
+@Entity()
+export class User {
+  @AssetUrl()
+  @Column()
+  profileImage: string; // 'uploads/x.jpg' → 'https://api.example.com/uploads/x.jpg'
+}
+```
+
+### Rate limiting
+
+Global rate limiting via `@nestjs/throttler`. `ThrottlerModule` is configured in `app.module.ts` from `throttle.config.ts` (`THROTTLE_TTL` seconds / `THROTTLE_LIMIT` per IP, default 60/60), and `ThrottlerGuard` is a global `APP_GUARD` registered **before** `AuthenticationGuard` (so unauthenticated abuse is counted). Auth endpoints are hardened with tighter per-route limits via `@Throttle()` (login 5/60s, forgot/reset-password 3/60s). Override a route with `@Throttle({ default: { limit, ttl } })`, exempt one with `@SkipThrottle()`. Exceeding a limit returns **429**.
+
+### Redis & caching
+
+A global `RedisModule` (`src/redis/`) provides a shared `ioredis` client (`REDIS_CLIENT`) built from `redis.config.ts` (`REDIS_URL`, default `redis://localhost:6379`; connects lazily so app boot stays clean without Redis). Inject `CacheService` to cache values — `get`/`set(key, value, ttlSeconds?)`/`del`, or `wrap(key, factory, ttlSeconds?)` for get-or-set. This client is the shared Redis foundation reused by other Redis-backed features.
+
+### Queues (BullMQ)
+
+Background jobs run on BullMQ (`@nestjs/bullmq`), configured in a global `QueueModule` (`src/queue/`) from `REDIS_URL` (its own connection, `maxRetriesPerRequest: null`). Enqueue with `QueueService.enqueue(name, data, opts?)`. Jobs on the `default` queue are handled by `ExampleProcessor` (`@Processor('default')` extending `WorkerHost`) — dispatch on `job.name`. Add more queues with `BullModule.registerQueue({ name })` + a `@Processor` for each. A running Redis is required to process jobs.
+
+### Refresh-token store (session revocation)
+
+On top of stateless JWT auth, refresh tokens carry a `jti` tracked in Redis (`RefreshTokenStore`, `src/auths/providers/refresh-token-store/`) so they can be revoked. Refresh **rotates** (the used token is revoked and a new one issued); a revoked/absent `jti` is rejected. Endpoints: `POST /auth/logout` (revoke the presented refresh token) and `POST /auth/logout-all` (revoke every refresh token for the authenticated user). Keys are `refresh:{userId}:{jti}` with TTL = refresh-token TTL.
+
+### Local infrastructure (Docker)
+
+`docker-compose.yml` spins up Postgres and Redis for local development (values default to `.env.example`, overridable via `.env`). Start them with `npm run docker:up` (`docker compose up -d`) and stop with `npm run docker:down`. The app then connects via `DATABASE_*` and `REDIS_URL`.
 
 ### Controller patterns
 
@@ -86,7 +128,7 @@ Use `handleError` from `@/common/error-handlers/error.handler` in catch blocks.
 
 ### Function length
 
-If a function is growing long due to `if/else` or conditional logic, split it into separate focused functions rather than one long branching function:
+A single function must not exceed **300–350 lines**. If a function is growing large — from `if/else`/conditional logic or just doing too much — split it into smaller, focused functions. Several small functions are always preferred over one large 350-line function:
 
 ```typescript
 // ❌ One long method with branches
@@ -126,6 +168,7 @@ npm run seed:admin
 Seeder credentials are controlled by `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in the active env file.
 
 When creating a new seeder:
+
 - Place it at `src/database/seeds/<name>.seeder.ts`
 - Use relative imports (no `@/` aliases)
 - Load env conditionally: `const env = process.env.NODE_ENV || ''; dotenv.config({ path: path.resolve(process.cwd(), env ? '.env.${env}' : '.env') })`
@@ -150,11 +193,11 @@ Selected by `NODE_ENV`: `.env.development`, `.env.production`, etc. Fallback: `.
 
 ### Three test layers
 
-| Layer | File pattern | Location | What it tests |
-|-------|-------------|----------|---------------|
-| Unit | `*.spec.ts` | Inside provider folder alongside source | Each provider/service in isolation, all deps mocked |
-| Controller | `*.controller.spec.ts` | Next to controller file | HTTP layer, route handling, delegates to service |
-| E2E | `*.e2e-spec.ts` | `test/` directory | Full request lifecycle with supertest |
+| Layer      | File pattern           | Location                                | What it tests                                       |
+| ---------- | ---------------------- | --------------------------------------- | --------------------------------------------------- |
+| Unit       | `*.spec.ts`            | Inside provider folder alongside source | Each provider/service in isolation, all deps mocked |
+| Controller | `*.controller.spec.ts` | Next to controller file                 | HTTP layer, route handling, delegates to service    |
+| E2E        | `*.e2e-spec.ts`        | `test/` directory                       | Full request lifecycle with supertest               |
 
 ### Test file placement
 
@@ -203,11 +246,11 @@ When building the edge case matrix for any module, cover ALL of these:
 
 Agent skills live in `.claude/skills/`. Each skill is a directory containing a `SKILL.md` with YAML frontmatter (`name`, `description`) and step-by-step instructions.
 
-| Skill | Description |
-|-------|-------------|
-| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md) | Adds AWS SDK + S3 uploads module to the project |
-| [add-stripe](.claude/skills/add-stripe/SKILL.md) | Adds Stripe SDK, config, webhooks, and optional connected accounts |
-| [add-sockets](.claude/skills/add-sockets/SKILL.md) | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService |
-| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore for the project — asks for app name and port first |
+| Skill                                                                                  | Description                                                                                                                            |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)                                       | Adds AWS SDK + S3 uploads module to the project                                                                                        |
+| [add-stripe](.claude/skills/add-stripe/SKILL.md)                                       | Adds Stripe SDK, config, webhooks, and optional connected accounts                                                                     |
+| [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService                                                         |
+| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore for the project — asks for app name and port first                                |
 | [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to build and deploy a Docker image via SSH — asks for environment, env file path, app name, and port |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests for a module — identifies edge cases and asks for confirmation before writing |
+| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Creates comprehensive unit, controller, and E2E tests for a module — identifies edge cases and asks for confirmation before writing    |

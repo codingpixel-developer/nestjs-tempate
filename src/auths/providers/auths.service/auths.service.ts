@@ -13,6 +13,7 @@ import { ForgotPasswordProvider } from '../forgot-password.provider/forgot-passw
 import { HashingProvider } from '../hashing.provider';
 import { LoginProvider } from '../login.provider/login.provider';
 import { RefreshTokenProvider } from '../refresh-token.provider/refresh-token.provider';
+import { LogoutProvider } from '../logout.provider/logout.provider';
 import { ResetPasswordProvider } from '../reset-password.provider/reset-password.provider';
 
 @Injectable()
@@ -24,6 +25,7 @@ export class AuthsService {
     private readonly forgotPasswordProvider: ForgotPasswordProvider,
     private readonly resetPasswordProvider: ResetPasswordProvider,
     private readonly changePasswordProvider: ChangePasswordProvider,
+    private readonly logoutProvider: LogoutProvider,
   ) {}
 
   async createAuth(
@@ -53,7 +55,7 @@ export class AuthsService {
   }
 
   async login(loginDto: LoginDto) {
-    let response = await this.loginProvider.execute(loginDto);
+    const response = await this.loginProvider.execute(loginDto);
     return response;
   }
 
@@ -71,5 +73,13 @@ export class AuthsService {
 
   async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
     return await this.changePasswordProvider.execute(userId, changePasswordDto);
+  }
+
+  async logout(refreshTokenDto: RefreshTokenDto) {
+    return await this.logoutProvider.logout(refreshTokenDto.refreshToken);
+  }
+
+  async logoutAll(userId: number) {
+    return await this.logoutProvider.logoutAll(userId);
   }
 }

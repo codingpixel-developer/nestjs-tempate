@@ -11,6 +11,8 @@ import { Auth } from '../../entities/auth.entity';
 import { ResetToken } from '../../entities/reset-token.entity';
 import { ActiveUserData } from '@/common/interfaces/active-user-data.interface';
 import { Admin } from '@/admin/entities/admin.entity';
+import { randomUUID } from 'crypto';
+import { RefreshTokenStore } from '../refresh-token-store/refresh-token-store.service';
 
 @Injectable()
 export class GenerateTokensProvider {
@@ -20,6 +22,7 @@ export class GenerateTokensProvider {
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
     @InjectRepository(ResetToken)
     private readonly resetTokenRepository: Repository<ResetToken>,
+    private readonly refreshTokenStore: RefreshTokenStore,
   ) {}
 
   private async signToken<T>(
@@ -58,6 +61,7 @@ export class GenerateTokensProvider {
   }
 
   public async generateLoginTokens(user: User) {
+    const jti = randomUUID();
     const [accessToken, refreshToken] = await Promise.all([
       // Generate Access Token with Email
       this.signToken<Partial<ActiveUserData>>(
@@ -67,13 +71,19 @@ export class GenerateTokensProvider {
         { email: user.email, type: user.type },
       ),
 
-      // Generate Refresh token without email
+      // Generate Refresh token with a jti tracked in the store for revocation
       this.signToken(
         user.id,
         this.jwtConfiguration.secret,
         this.jwtConfiguration.refreshTokenTtl,
+        { jti },
       ),
     ]);
+    await this.refreshTokenStore.store(
+      user.id,
+      jti,
+      this.jwtConfiguration.refreshTokenTtl,
+    );
     return {
       accessToken,
       refreshToken,
@@ -101,7 +111,7 @@ export class GenerateTokensProvider {
           { token: resetPasswordToken, expiresAt },
         );
       } else {
-        let newToken = this.resetTokenRepository.create({
+        const newToken = this.resetTokenRepository.create({
           user: auth.user,
           token: resetPasswordToken,
           expiresAt,
@@ -116,6 +126,7 @@ export class GenerateTokensProvider {
   }
 
   public async generateAdminLoginTokens(admin: Admin) {
+    const jti = randomUUID();
     const [accessToken, refreshToken] = await Promise.all([
       // Generate Access Token with Email and Admin flag
       this.signToken<Partial<ActiveUserData>>(
@@ -125,14 +136,19 @@ export class GenerateTokensProvider {
         { email: admin.email, isAdmin: true },
       ),
 
-      // Generate Refresh token with Admin flag
+      // Generate Refresh token with Admin flag and a tracked jti
       this.signToken(
         admin.id,
         this.jwtConfiguration.secretAdmin,
         this.jwtConfiguration.refreshTokenTtl,
-        { isAdmin: true },
+        { jti, isAdmin: true },
       ),
     ]);
+    await this.refreshTokenStore.store(
+      admin.id,
+      jti,
+      this.jwtConfiguration.refreshTokenTtl,
+    );
     return {
       accessToken,
       refreshToken,

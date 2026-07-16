@@ -9,6 +9,7 @@ import { UserType } from '@/users/enums/user-type.enum';
 import { User } from '@/users/entities/user.entity';
 import { Admin } from '@/admin/entities/admin.entity';
 import { Auth } from '../../entities/auth.entity';
+import { RefreshTokenStore } from '../refresh-token-store/refresh-token-store.service';
 
 describe('GenerateTokensProvider', () => {
   let provider: GenerateTokensProvider;
@@ -66,6 +67,10 @@ describe('GenerateTokensProvider', () => {
             save: jest.fn(),
           },
         },
+        {
+          provide: RefreshTokenStore,
+          useValue: { store: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -114,7 +119,11 @@ describe('GenerateTokensProvider', () => {
       await provider.generateLoginTokens(mockUser);
 
       expect(jwtService.signAsync).toHaveBeenCalledWith(
-        { id: mockUser.id },
+        {
+          id: mockUser.id,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          jti: expect.any(String),
+        },
         {
           audience: jwtConfiguration.audience,
           issuer: jwtConfiguration.issuer,
@@ -165,7 +174,12 @@ describe('GenerateTokensProvider', () => {
       await provider.generateAdminLoginTokens(mockAdmin);
 
       expect(jwtService.signAsync).toHaveBeenCalledWith(
-        { id: mockAdmin.id, isAdmin: true },
+        {
+          id: mockAdmin.id,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          jti: expect.any(String),
+          isAdmin: true,
+        },
         {
           audience: jwtConfiguration.audience,
           issuer: jwtConfiguration.issuer,

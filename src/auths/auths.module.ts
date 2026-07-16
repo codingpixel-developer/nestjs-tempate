@@ -16,6 +16,8 @@ import { ForgotPasswordProvider } from './providers/forgot-password.provider/for
 import { RefreshTokenProvider } from './providers/refresh-token.provider/refresh-token.provider';
 import { LoginProvider } from './providers/login.provider/login.provider';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider/generate-tokens.provider';
+import { RefreshTokenStore } from './providers/refresh-token-store/refresh-token-store.service';
+import { LogoutProvider } from './providers/logout.provider/logout.provider';
 
 @Module({
   controllers: [AuthsController],
@@ -33,6 +35,8 @@ import { GenerateTokensProvider } from './providers/generate-tokens.provider/gen
     ForgotPasswordProvider,
     ResetPasswordProvider,
     ChangePasswordProvider,
+    RefreshTokenStore,
+    LogoutProvider,
     {
       provide: HashingProvider,
       useClass: BcryptProvider,

@@ -5,6 +5,10 @@ export default Joi.object({
   APP_NAME: Joi.string().required(),
   PORT: Joi.number().port().default(5614),
   FRONTEND_URL: Joi.string().required(),
+  APP_URL: Joi.string().uri(),
+  THROTTLE_TTL: Joi.number().default(60),
+  THROTTLE_LIMIT: Joi.number().default(60),
+  REDIS_URL: Joi.string(),
   /* Database configuration */
   DATABASE_PORT: Joi.number().port().default(5432),
   DATABASE_USERNAME: Joi.string().required(),

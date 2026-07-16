@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -8,6 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig, { DatabaseConfig } from './config/database.config';
 import appConfig from './config/app.config';
 import mailConfig from './config/mail.config';
+import throttleConfig, { ThrottleConfig } from './config/throttle.config';
+import redisConfig from './config/redis.config';
 import validationSchema from './config/env.validation';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
@@ -15,9 +17,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccessTokenGuard } from './auths/guards/access-token.guard';
 import { AdminGuard } from './auths/guards/admin.guard';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthenticationGuard } from './auths/guards/authentication.guard';
 import { DataResponseInterceptor } from './common/interceptors/data-response.interceptor';
+import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
+import { AssetUrlTransformer } from './common/transformers/asset-url.transformer';
+import { RESPONSE_TRANSFORMERS } from './common/transformers/response-transformer.interface';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AdminModule } from './admin/admin.module';
+import { RedisModule } from './redis/redis.module';
+import { QueueModule } from './queue/queue.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -25,9 +34,23 @@ const ENV = process.env.NODE_ENV;
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, appConfig, mailConfig],
+      load: [
+        databaseConfig,
+        appConfig,
+        mailConfig,
+        throttleConfig,
+        redisConfig,
+      ],
       validationSchema,
       envFilePath: !ENV ? '.env' : `.env.${ENV}`,
+    }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const config = configService.get<ThrottleConfig>('throttle');
+        return [{ ttl: config?.ttl ?? 60000, limit: config?.limit ?? 60 }];
+      },
+      inject: [ConfigService],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -61,6 +84,8 @@ const ENV = process.env.NODE_ENV;
     AuthsModule,
     MailsModule,
     AdminModule,
+    RedisModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [
@@ -69,12 +94,30 @@ const ENV = process.env.NODE_ENV;
     AdminGuard,
     {
       provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
       useClass: AuthenticationGuard,
     },
     {
       provide: APP_INTERCEPTOR,
       useClass: DataResponseInterceptor,
     },
+    AssetUrlTransformer,
+    {
+      provide: RESPONSE_TRANSFORMERS,
+      useFactory: (assetUrl: AssetUrlTransformer) => [assetUrl],
+      inject: [AssetUrlTransformer],
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTransformInterceptor,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
