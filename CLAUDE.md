@@ -116,6 +116,10 @@ Background jobs run on BullMQ (`@nestjs/bullmq`), configured in a global `QueueM
 
 On top of stateless JWT auth, refresh tokens carry a `jti` tracked in Redis (`RefreshTokenStore`, `src/auths/providers/refresh-token-store/`) so they can be revoked. Refresh **rotates** (the used token is revoked and a new one issued); a revoked/absent `jti` is rejected. Endpoints: `POST /auth/logout` (revoke the presented refresh token) and `POST /auth/logout-all` (revoke every refresh token for the authenticated user). Keys are `refresh:{userId}:{jti}` with TTL = refresh-token TTL.
 
+### Local infrastructure (Docker)
+
+`docker-compose.yml` spins up Postgres and Redis for local development (values default to `.env.example`, overridable via `.env`). Start them with `npm run docker:up` (`docker compose up -d`) and stop with `npm run docker:down`. The app then connects via `DATABASE_*` and `REDIS_URL`.
+
 ### Controller patterns
 
 - Swagger decorators: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiBody`, `@ApiBearerAuth`

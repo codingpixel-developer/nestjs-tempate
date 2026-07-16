@@ -9,6 +9,8 @@
     "build": "nest build",
     "prepare": "husky",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
     "start": "nest start",
     "start:dev": "NODE_ENV=development nest start --watch",
     "start:debug": "NODE_ENV=development nest start --debug --watch",
