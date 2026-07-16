@@ -128,7 +128,7 @@ On top of stateless JWT auth, refresh tokens carry a `jti` tracked in Redis (`Re
 
 ### Function length
 
-If a function is growing long due to `if/else` or conditional logic, split it into separate focused functions rather than one long branching function:
+A single function must not exceed **300–350 lines**. If a function is growing large — from `if/else`/conditional logic or just doing too much — split it into smaller, focused functions. Several small functions are always preferred over one large 350-line function:
 
 ```typescript
 // ❌ One long method with branches
