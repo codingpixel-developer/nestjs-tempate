@@ -7,6 +7,7 @@ import { RefreshTokenProvider } from '../refresh-token.provider/refresh-token.pr
 import { ForgotPasswordProvider } from '../forgot-password.provider/forgot-password.provider';
 import { ResetPasswordProvider } from '../reset-password.provider/reset-password.provider';
 import { ChangePasswordProvider } from '../change-password.provider/change-password.provider';
+import { LogoutProvider } from '../logout.provider/logout.provider';
 import { Auth } from '../../entities/auth.entity';
 import { AuthData } from '../../interfaces/auth-data.interface';
 import { UserType } from '@/users/enums/user-type.enum';
@@ -30,6 +31,7 @@ describe('AuthsService', () => {
   let changePasswordProvider: jest.Mocked<
     Pick<ChangePasswordProvider, 'execute'>
   >;
+  let logoutProvider: jest.Mocked<Pick<LogoutProvider, 'logout' | 'logoutAll'>>;
 
   const mockUser = {
     id: 1,
@@ -89,6 +91,10 @@ describe('AuthsService', () => {
           provide: ChangePasswordProvider,
           useValue: { execute: jest.fn() },
         },
+        {
+          provide: LogoutProvider,
+          useValue: { logout: jest.fn(), logoutAll: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -99,6 +105,7 @@ describe('AuthsService', () => {
     forgotPasswordProvider = module.get(ForgotPasswordProvider);
     resetPasswordProvider = module.get(ResetPasswordProvider);
     changePasswordProvider = module.get(ChangePasswordProvider);
+    logoutProvider = module.get(LogoutProvider);
   });
 
   describe('createAuth', () => {
@@ -215,6 +222,31 @@ describe('AuthsService', () => {
       await service.changePassword(1, dto);
 
       expect(changePasswordProvider.execute).toHaveBeenCalledWith(1, dto);
+    });
+  });
+
+  describe('logout', () => {
+    it('should delegate to logoutProvider.logout with the refresh token', async () => {
+      const dto = { refreshToken: 'token' };
+      logoutProvider.logout.mockResolvedValue({ message: 'Logged out' });
+
+      const result = await service.logout(dto);
+
+      expect(result).toEqual({ message: 'Logged out' });
+      expect(logoutProvider.logout).toHaveBeenCalledWith('token');
+    });
+  });
+
+  describe('logoutAll', () => {
+    it('should delegate to logoutProvider.logoutAll with the user id', async () => {
+      logoutProvider.logoutAll.mockResolvedValue({
+        message: 'Logged out from all devices',
+      });
+
+      const result = await service.logoutAll(1);
+
+      expect(result).toEqual({ message: 'Logged out from all devices' });
+      expect(logoutProvider.logoutAll).toHaveBeenCalledWith(1);
     });
   });
 });

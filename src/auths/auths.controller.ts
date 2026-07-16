@@ -93,4 +93,23 @@ export class AuthsController {
   ) {
     return await this.authService.changePassword(user.id, changePasswordDto);
   }
+
+  @Post('logout')
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke the given refresh token (logout)' })
+  @ApiResponse({ status: 200, description: 'Logged out' })
+  async logout(@Body() refreshTokenDto: RefreshTokenDto) {
+    return await this.authService.logout(refreshTokenDto);
+  }
+
+  @Post('logout-all')
+  @Auth(AuthType.Bearer)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Revoke all refresh tokens for the user' })
+  @ApiResponse({ status: 200, description: 'Logged out from all devices' })
+  async logoutAll(@ActiveUser() user: User) {
+    return await this.authService.logoutAll(user.id);
+  }
 }

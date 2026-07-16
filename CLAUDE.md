@@ -112,6 +112,10 @@ A global `RedisModule` (`src/redis/`) provides a shared `ioredis` client (`REDIS
 
 Background jobs run on BullMQ (`@nestjs/bullmq`), configured in a global `QueueModule` (`src/queue/`) from `REDIS_URL` (its own connection, `maxRetriesPerRequest: null`). Enqueue with `QueueService.enqueue(name, data, opts?)`. Jobs on the `default` queue are handled by `ExampleProcessor` (`@Processor('default')` extending `WorkerHost`) — dispatch on `job.name`. Add more queues with `BullModule.registerQueue({ name })` + a `@Processor` for each. A running Redis is required to process jobs.
 
+### Refresh-token store (session revocation)
+
+On top of stateless JWT auth, refresh tokens carry a `jti` tracked in Redis (`RefreshTokenStore`, `src/auths/providers/refresh-token-store/`) so they can be revoked. Refresh **rotates** (the used token is revoked and a new one issued); a revoked/absent `jti` is rejected. Endpoints: `POST /auth/logout` (revoke the presented refresh token) and `POST /auth/logout-all` (revoke every refresh token for the authenticated user). Keys are `refresh:{userId}:{jti}` with TTL = refresh-token TTL.
+
 ### Controller patterns
 
 - Swagger decorators: `@ApiTags`, `@ApiOperation`, `@ApiResponse`, `@ApiBody`, `@ApiBearerAuth`

@@ -7,6 +7,7 @@ import { UsersService } from '@/users/providers/users.service/users.service';
 import { UserType } from '@/users/enums/user-type.enum';
 import { User } from '@/users/entities/user.entity';
 import jwtConfig from '@/config/jwt.config';
+import { RefreshTokenStore } from '../refresh-token-store/refresh-token-store.service';
 
 describe('RefreshTokenProvider', () => {
   let provider: RefreshTokenProvider;
@@ -14,6 +15,9 @@ describe('RefreshTokenProvider', () => {
   let usersService: jest.Mocked<Pick<UsersService, 'findById'>>;
   let generateTokensProvider: jest.Mocked<
     Pick<GenerateTokensProvider, 'generateLoginTokens'>
+  >;
+  let refreshTokenStore: jest.Mocked<
+    Pick<RefreshTokenStore, 'isValid' | 'revoke'>
   >;
 
   const jwtConfiguration = {
@@ -53,6 +57,13 @@ describe('RefreshTokenProvider', () => {
           provide: jwtConfig.KEY,
           useValue: jwtConfiguration,
         },
+        {
+          provide: RefreshTokenStore,
+          useValue: {
+            isValid: jest.fn().mockResolvedValue(true),
+            revoke: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -60,6 +71,7 @@ describe('RefreshTokenProvider', () => {
     jwtService = module.get(JwtService);
     usersService = module.get(UsersService);
     generateTokensProvider = module.get(GenerateTokensProvider);
+    refreshTokenStore = module.get(RefreshTokenStore);
   });
 
   it('should return new tokens on successful refresh', async () => {
@@ -140,6 +152,15 @@ describe('RefreshTokenProvider', () => {
 
     expect(generateTokensProvider.generateLoginTokens).toHaveBeenCalledWith(
       mockUser,
+    );
+  });
+
+  it('should throw when the refresh token has been revoked', async () => {
+    jwtService.verifyAsync.mockResolvedValue({ id: 1, jti: 'j1' });
+    refreshTokenStore.isValid.mockResolvedValue(false);
+
+    await expect(provider.execute(refreshTokenDto)).rejects.toThrow(
+      new UnauthorizedException('Session expired'),
     );
   });
 });
