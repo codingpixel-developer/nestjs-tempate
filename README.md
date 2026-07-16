@@ -31,18 +31,34 @@ A production-ready NestJS 11 template with JWT authentication, role-based access
   - Swagger documentation at `/api`
   - Environment validation with Joi
 
+- **Security & Rate Limiting**
+  - Helmet security headers
+  - Global rate limiting via `@nestjs/throttler` with stricter limits on auth endpoints
+
+- **Redis** (via `ioredis`, one shared connection)
+  - `CacheService` — `get` / `set` / `del` / `wrap` (get-or-set) with TTL
+  - Background jobs via BullMQ (queue + example processor)
+  - Refresh-token store / blocklist — real logout (`POST /auth/logout`, `POST /auth/logout-all`) with rotation
+
+- **Observability & Response Handling**
+  - HTTP request logger middleware (per-request method/url/status/duration, level by status)
+  - Extensible global response transformer — `@AssetUrl()` expands relative asset paths to full URLs
+
+- **Local Development**
+  - `docker-compose.yml` for Postgres + Redis (`npm run docker:up` / `npm run docker:down`)
+
 ## Tech Stack
 
-| Layer      | Technology                                  |
-| ---------- | ------------------------------------------- |
-| Framework  | NestJS 11 (Express)                         |
-| Language   | TypeScript 5.7 (ES2023, `nodenext` modules) |
-| Database   | PostgreSQL + TypeORM                        |
-| Auth       | `@nestjs/jwt`, bcryptjs                     |
-| Email      | `@nestjs-modules/mailer` + EJS              |
-| Validation | `class-validator`, `class-transformer`, Joi |
+| Layer      | Technology                                     |
+| ---------- | ---------------------------------------------- |
+| Framework  | NestJS 11 (Express)                            |
+| Language   | TypeScript 5.7 (ES2023, `nodenext` modules)    |
+| Database   | PostgreSQL + TypeORM                           |
+| Auth       | `@nestjs/jwt`, bcryptjs                        |
+| Email      | `@nestjs-modules/mailer` + EJS                 |
+| Validation | `class-validator`, `class-transformer`, Joi    |
 | Testing    | Jest 30, ts-jest, `@nestjs/testing`, supertest |
-| Docs       | `@nestjs/swagger`                           |
+| Docs       | `@nestjs/swagger`                              |
 
 ## Project Setup
 
@@ -166,14 +182,14 @@ src/
 
 Agent skills live in `.claude/skills/`. Each skill is a directory with a `SKILL.md` that an AI agent reads to add a new integration to the project.
 
-| Skill                                             | Description                                               |
-| ------------------------------------------------- | --------------------------------------------------------- |
-| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)   | Adds AWS SDK + S3 uploads module                          |
-| [add-stripe](.claude/skills/add-stripe/SKILL.md)   | Adds Stripe with webhooks and optional connected accounts |
-| [add-sockets](.claude/skills/add-sockets/SKILL.md) | Adds Socket.IO with JWT auth and injectable SocketService |
-| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md) | Generates a multi-stage Dockerfile and .dockerignore |
-| [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md) | Creates comprehensive unit, controller, and E2E tests with edge case review |
+| Skill                                                                                  | Description                                                                 |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)                                       | Adds AWS SDK + S3 uploads module                                            |
+| [add-stripe](.claude/skills/add-stripe/SKILL.md)                                       | Adds Stripe with webhooks and optional connected accounts                   |
+| [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO with JWT auth and injectable SocketService                   |
+| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore                        |
+| [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH             |
+| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Creates comprehensive unit, controller, and E2E tests with edge case review |
 
 See [CLAUDE.md](CLAUDE.md) for full project conventions used by Claude.
 
