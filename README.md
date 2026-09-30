@@ -189,9 +189,9 @@ Agent skills live in `.claude/skills/`. Each skill is a directory with a `SKILL.
 | [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO with JWT auth and injectable SocketService                   |
 | [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore                        |
 | [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH             |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Creates comprehensive unit, controller, and E2E tests with edge case review |
+| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Adds focused backend tests for material risks and regressions              |
 
-See [CLAUDE.md](CLAUDE.md) for full project conventions used by Claude.
+See [AGENTS.md](AGENTS.md) for full project conventions used by coding agents.
 
 ## Database Seeders
 
@@ -206,7 +206,7 @@ The admin credentials are set via `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` i
 
 ## Testing
 
-The project uses Jest 30 with `@nestjs/testing` and supertest. All modules have comprehensive test coverage across three layers:
+The project uses Jest 30 with `@nestjs/testing` and supertest. Add focused tests for material business rules, security, data integrity, and regressions. Use the smallest useful layer:
 
 - **Unit tests** (`*.spec.ts`) — provider logic in isolation with mocked dependencies
 - **Controller tests** (`*.controller.spec.ts`) — HTTP layer delegation

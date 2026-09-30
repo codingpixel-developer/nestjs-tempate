@@ -9,14 +9,14 @@ description: Use when creating or updating a Dockerfile for this NestJS project.
 
 This project uses a **two-stage Docker build**: a `builder` stage compiles TypeScript, and a `production` stage runs the compiled output with only production dependencies. The compiled entry point is `dist/main.js`.
 
-## Step 0: Ask the User
+## Step 0: Resolve Configuration
 
-Before writing any files, ask these two questions one at a time:
+Read project configuration first. Ask for any missing values together:
 
 1. **App name** — what is the name of this project? (e.g. `my-api`) — used as the Docker container name and in example commands
 2. **Port number** — what port does the app listen on? (e.g. `3000`) — used in `EXPOSE` and the `-p` host mapping
 
-Use the answers to replace `<APP_NAME>` and `<PORT>` throughout before writing any files.
+Use the resolved values to replace `<APP_NAME>` and `<PORT>` throughout before writing any files.
 
 ## Key Facts About This Project
 
@@ -109,9 +109,9 @@ docker exec <container> node -r ts-node/register \
 
 ## File Creation
 
-After all questions are answered and placeholders are filled in, write these two files to the project root:
+After resolving the values and placeholders, write these two files to the project root:
 
 1. **`Dockerfile`** — the full two-stage Dockerfile above with `<APP_NAME>` and `<PORT>` replaced
 2. **`.dockerignore`** — the `.dockerignore` block above (no substitutions needed)
 
-Use the Write tool for both files.
+Use available file editing tools for both files. Verify the image build when Docker is available; report any check that could not run.

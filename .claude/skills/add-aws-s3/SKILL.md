@@ -209,4 +209,4 @@ After completing all steps, run:
 npm run build
 ```
 
-Confirm zero errors before finishing.
+Add a focused test if file keys, access control, or failure handling changes create material risk. Run affected tests once. Report build and test results.

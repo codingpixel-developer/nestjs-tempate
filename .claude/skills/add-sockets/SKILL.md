@@ -258,4 +258,4 @@ After completing all steps, run:
 npm run build
 ```
 
-Confirm zero errors before finishing.
+Add a focused test for JWT rejection or access control when those paths change. Run affected tests once. Report build and test results.
