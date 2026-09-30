@@ -10,11 +10,11 @@ description: >-
 
 # Add Stripe
 
-Interactive setup for Stripe payments. **Ask the user** the following questions before generating any code, then follow the conditional steps based on answers.
+Set up only the Stripe capabilities requested. Check existing requirements and code first; ask about choices that remain unclear.
 
 ## Questions to ask
 
-Use `AskQuestion` (or ask conversationally) for each:
+Resolve these choices from the request or project. Ask for missing choices together:
 
 1. **Connected accounts?** -- Does the project need Stripe Connect (connected accounts)? (Yes / No)
 2. **Account webhooks?** -- Add webhook endpoint for the main Stripe account? (Yes / No)
@@ -568,4 +568,4 @@ After completing all steps, run:
 npm run build
 ```
 
-Confirm zero errors before finishing.
+Add focused tests for webhook signature checks, payment state changes, or other material money and security risks. Run affected tests once. Report build and test results.
