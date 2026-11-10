@@ -42,6 +42,11 @@ import { LogoutProvider } from './providers/logout.provider/logout.provider';
       useClass: BcryptProvider,
     },
   ],
-  exports: [TypeOrmModule, AuthsService, HashingProvider],
+  exports: [
+    TypeOrmModule,
+    AuthsService,
+    HashingProvider,
+    GenerateTokensProvider,
+  ],
 })
 export class AuthsModule {}
