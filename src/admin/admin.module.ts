@@ -7,7 +7,6 @@ import { AdminController } from './admin.controller';
 import { AdminLoginProvider } from './providers/admin-login.provider/admin-login.provider';
 import { HashingProvider } from '@/auths/providers/hashing.provider';
 import { BcryptProvider } from '@/auths/providers/bcrypt.provider/bcrypt.provider';
-import { GenerateTokensProvider } from '@/auths/providers/generate-tokens.provider/generate-tokens.provider';
 import { ResetToken } from '@/auths/entities/reset-token.entity';
 import jwtConfig from '../config/jwt.config';
 import { AdminService } from './providers/admin.service/admin.service';
@@ -28,7 +27,6 @@ import { User } from '@/users/entities/user.entity';
   controllers: [AdminController],
   providers: [
     AdminLoginProvider,
-    GenerateTokensProvider,
     AdminService,
     PaginationProvider,
     AdminChangePasswordProvider,

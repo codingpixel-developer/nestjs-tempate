@@ -1,7 +1,7 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 import { Global, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { join } from 'path';
 import { MailsService } from './providers/mail.service';
 
@@ -11,7 +11,8 @@ import { MailsService } from './providers/mail.service';
   exports: [MailsService],
   imports: [
     MailerModule.forRootAsync({
-      useFactory: async (config: ConfigService) => ({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
         transport: {
           host: config.get<string>('mail.host'),
           secure: false,

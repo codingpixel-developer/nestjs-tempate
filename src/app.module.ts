@@ -27,6 +27,8 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { AdminModule } from './admin/admin.module';
 import { RedisModule } from './redis/redis.module';
 import { QueueModule } from './queue/queue.module';
+// Lines below "cfsa:" markers are managed by create-fullstack-app add-ons. Keep the markers.
+// cfsa:imports
 
 const ENV = process.env.NODE_ENV;
 
@@ -86,6 +88,7 @@ const ENV = process.env.NODE_ENV;
     AdminModule,
     RedisModule,
     QueueModule,
+    // cfsa:modules
   ],
   controllers: [AppController],
   providers: [
@@ -114,6 +117,7 @@ const ENV = process.env.NODE_ENV;
       provide: APP_INTERCEPTOR,
       useClass: ResponseTransformInterceptor,
     },
+    // cfsa:providers
   ],
 })
 export class AppModule implements NestModule {
