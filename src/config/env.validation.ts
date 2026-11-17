@@ -32,4 +32,5 @@ export default Joi.object({
   SMTP_PASSWORD: Joi.string().required(),
   SMTP_FROM_EMAIL: Joi.string().required(),
   SMTP_FROM_NAME: Joi.string().required(),
+  /* cfsa:env */
 });

@@ -5,10 +5,7 @@ export interface ThrottleConfig {
   limit: number;
 }
 
-export default registerAs(
-  'throttle',
-  (): ThrottleConfig => ({
-    ttl: (Number(process.env.THROTTLE_TTL) || 60) * 1000,
-    limit: Number(process.env.THROTTLE_LIMIT) || 60,
-  }),
-);
+export default registerAs('throttle', (): ThrottleConfig => ({
+  ttl: (Number(process.env.THROTTLE_TTL) || 60) * 1000,
+  limit: Number(process.env.THROTTLE_LIMIT) || 60,
+}));

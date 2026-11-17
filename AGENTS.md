@@ -1,10 +1,10 @@
 # NestJS Auth Template
 
-NestJS 11 authentication template with PostgreSQL, TypeORM, JWT auth, admin management, and transactional email.
+NestJS 12 authentication template with PostgreSQL, TypeORM, JWT auth, admin management, and transactional email.
 
 ## Tech Stack
 
-- **Runtime**: NestJS 11 (Express), TypeScript (ES2023, `nodenext` modules)
+- **Runtime**: NestJS 12 (Express), TypeScript 6 (ES2023, `nodenext` modules); Node >=20.19 to run, Node >=24.9 to run tests
 - **Database**: PostgreSQL via TypeORM (auto-loaded entities, CLI migrations via `src/config/typeorm.config.ts`)
 - **Auth**: JWT access/refresh tokens, bcryptjs, global `AuthenticationGuard`, `@Auth()` decorator for opt-out
 - **Validation**: `class-validator` + `class-transformer` (global `ValidationPipe`), Joi for env validation
@@ -67,15 +67,16 @@ export interface FooConfig {
   bar: string;
 }
 
-export default registerAs(
-  'foo',
-  (): FooConfig => ({
-    bar: process.env.FOO_BAR || 'default',
-  }),
-);
+export default registerAs('foo', (): FooConfig => ({
+  bar: process.env.FOO_BAR || 'default',
+}));
 ```
 
 Configs are loaded in `app.module.ts` via `ConfigModule.forRoot({ load: [...] })`. Env vars are validated in `src/config/env.validation.ts` using Joi.
+
+### Add-on markers
+
+`cfsa:` marker comments in `app.module.ts`, `env.validation.ts` and `.env.example` are where create-fullstack-app add-ons insert code — never delete them.
 
 ### Error handling
 
@@ -247,11 +248,11 @@ Consider categories relevant to the change. Test only cases whose failure would 
 
 Agent skills live in `.claude/skills/`. Each skill is a directory containing a `SKILL.md` with YAML frontmatter (`name`, `description`) and step-by-step instructions.
 
-| Skill                                                                                  | Description                                                                                                                            |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)                                       | Adds AWS SDK + S3 uploads module to the project                                                                                        |
-| [add-stripe](.claude/skills/add-stripe/SKILL.md)                                       | Adds Stripe SDK, config, webhooks, and optional connected accounts                                                                     |
-| [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService                                                         |
-| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore; resolves app name and port from project configuration                            |
-| [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to deploy a Docker image via SSH; asks only for missing deployment details                           |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Adds focused backend tests for material risks and regressions                                                                          |
+| Skill                                                                                  | Description                                                                                                  |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [add-aws-s3](.claude/skills/add-aws-s3/SKILL.md)                                       | Adds AWS SDK + S3 uploads module to the project                                                              |
+| [add-stripe](.claude/skills/add-stripe/SKILL.md)                                       | Adds Stripe SDK, config, webhooks, and optional connected accounts                                           |
+| [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService                               |
+| [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore; resolves app name and port from project configuration  |
+| [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to deploy a Docker image via SSH; asks only for missing deployment details |
+| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Adds focused backend tests for material risks and regressions                                                |
