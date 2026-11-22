@@ -67,9 +67,12 @@ export interface FooConfig {
   bar: string;
 }
 
-export default registerAs('foo', (): FooConfig => ({
-  bar: process.env.FOO_BAR || 'default',
-}));
+export default registerAs(
+  'foo',
+  (): FooConfig => ({
+    bar: process.env.FOO_BAR || 'default',
+  }),
+);
 ```
 
 Configs are loaded in `app.module.ts` via `ConfigModule.forRoot({ load: [...] })`. Env vars are validated in `src/config/env.validation.ts` using Joi.
@@ -129,22 +132,7 @@ On top of stateless JWT auth, refresh tokens carry a `jti` tracked in Redis (`Re
 
 ### Function length
 
-A single function must not exceed **300–350 lines**. If a function is growing large — from `if/else`/conditional logic or just doing too much — split it into smaller, focused functions. Several small functions are always preferred over one large 350-line function:
-
-```typescript
-// ❌ One long method with branches
-async handle(type: 'create' | 'update') {
-  if (type === 'create') {
-    // 20 lines
-  } else {
-    // 20 lines
-  }
-}
-
-// ✅ Two focused methods
-async handleCreate() { ... }
-async handleUpdate() { ... }
-```
+A single function must not exceed **300–350 lines**. Split large or branch-heavy functions into smaller focused ones.
 
 ### File size limits
 
@@ -190,10 +178,13 @@ Selected by `NODE_ENV`: `.env.development`, `.env.production`, etc. Fallback: `.
 - Add focused tests for material business rules, security, data integrity, and bug regressions. Routine endpoint wiring and simple provider delegation do not require separate tests by default.
 - Identify relevant edge cases before implementation. Discuss uncertain behavior with the user when it affects requirements; do not pause every change for an edge-case approval.
 - Choose the smallest useful test layer and avoid repeating the same behavior across unit, controller, and E2E tests.
+- Test-first is not required; tests may be written after the implementation.
 - Run affected tests once after changes, then rerun only after a failure or fix. Run broader suites when work spans multiple modules or a release gate requires them.
 - Run relevant build and lint checks before reporting completion. Report exactly which checks ran.
 
 ### Three test layers
+
+Pick the one layer that fits; a feature does not need all three.
 
 | Layer      | File pattern           | Location                                | What it tests                                       |
 | ---------- | ---------------------- | --------------------------------------- | --------------------------------------------------- |
@@ -223,15 +214,11 @@ test/
 
 ### Edge case prompts
 
-Consider categories relevant to the change. Test only cases whose failure would matter:
+Test only cases whose failure would matter. Project-specific checks:
 
-- **Validation:** DTO constraints, regex patterns, required fields, whitelist rejection, type coercion
-- **Auth/Authorization:** Missing token, expired token, wrong role, wrong token type, deleted user after token issued
-- **Business logic:** Happy path, duplicate data, not found, state conflicts, same-password-as-old checks
-- **Database:** Transaction rollback on failure, connection timeout, null/missing relations, concurrent operations
-- **Error handling:** Correct exception types (`UnauthorizedException` vs `BadRequestException` vs `NotFoundException`), error messages, `handleError` catch blocks
-- **Boundary conditions:** Empty strings, zero/negative IDs, null vs undefined optional fields, max-length strings
-- **Response format:** Correct return values, message strings, token structure
+- **Auth:** wrong token type, user deleted after token issued
+- **Business logic:** same-password-as-old checks
+- **Error handling:** correct exception type (`UnauthorizedException` vs `BadRequestException` vs `NotFoundException`), `handleError` catch blocks
 
 ### Mocking conventions
 
@@ -255,4 +242,3 @@ Agent skills live in `.claude/skills/`. Each skill is a directory containing a `
 | [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO WebSockets with JWT auth, gateway, and injectable SocketService                               |
 | [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore; resolves app name and port from project configuration  |
 | [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow to deploy a Docker image via SSH; asks only for missing deployment details |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Adds focused backend tests for material risks and regressions                                                |

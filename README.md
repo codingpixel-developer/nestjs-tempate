@@ -189,7 +189,6 @@ Agent skills live in `.claude/skills/`. Each skill is a directory with a `SKILL.
 | [add-sockets](.claude/skills/add-sockets/SKILL.md)                                     | Adds Socket.IO with JWT auth and injectable SocketService       |
 | [write-dockerfile](.claude/skills/write-dockerfile/SKILL.md)                           | Generates a multi-stage Dockerfile and .dockerignore            |
 | [github-workflow-docker-deploy](.claude/skills/github-workflow-docker-deploy/SKILL.md) | Creates a GitHub Actions workflow for Docker deployment via SSH |
-| [create-unit-tests](.claude/skills/create-unit-tests/SKILL.md)                         | Adds focused backend tests for material risks and regressions   |
 
 See [AGENTS.md](AGENTS.md) for full project conventions used by coding agents.
 
